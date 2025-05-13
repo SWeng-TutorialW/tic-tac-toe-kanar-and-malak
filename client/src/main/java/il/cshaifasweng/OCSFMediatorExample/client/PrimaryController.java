@@ -53,7 +53,7 @@ public class PrimaryController implements Serializable {
     private Button cell22; // Value injected by FXMLLoader
 
     public String mySymbol;     // player X/O
-    public String currentTurn;
+    public String currentTurn = "X";
     private Button[][] buttonMatrix = new Button[3][3];
     private static PrimaryController instance;
 
@@ -98,6 +98,13 @@ public class PrimaryController implements Serializable {
         this.currentTurn = currTurn;
     }
 
+    public void updateTurn(){
+        if(currentTurn.equals("X"))
+            currentTurn = "O";
+        else {
+            currentTurn = "X";
+        }
+    }
 
     //    private void NotmyTurn() {
 //        if (!myTurn()) {
@@ -136,8 +143,11 @@ public class PrimaryController implements Serializable {
 
         System.out.println(mySymbol);
         Button clicked = (Button) event.getSource();
-        int row = GridPane.getRowIndex(clicked);
-        int col = GridPane.getColumnIndex(clicked);
+        Integer rowIndex = GridPane.getRowIndex(clicked);
+        Integer colIndex = GridPane.getColumnIndex(clicked);
+        int row = (rowIndex == null) ? 0 : rowIndex;
+        int col = (colIndex == null) ? 0 : colIndex;
+
 
 
         // if it is not your turn
@@ -164,6 +174,9 @@ public class PrimaryController implements Serializable {
             GameMessage move = new GameMessage("move", row, col, mySymbol);
             //String msg = String.format("move %d %d %s", row, col, mySymbol);
             client.sendToServer(move);
+            updateTurn();
+
+
 
         } catch (IOException e) {
             EventBus.getDefault().post(new WarningEvent(new Warning("Failed to send move.")));

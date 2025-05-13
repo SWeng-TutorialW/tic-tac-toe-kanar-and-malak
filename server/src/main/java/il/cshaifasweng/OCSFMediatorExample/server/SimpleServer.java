@@ -18,7 +18,7 @@ public class SimpleServer extends AbstractServer implements Serializable {
     int counter = 0;//counts the full cells in the board
     public ConnectionToClient playerX = null;
     public ConnectionToClient playerO = null;
-    public String currentTurn ;
+    public String currentTurn;
     public int clientsNum = 0;
 
     public SimpleServer(int port) {
@@ -28,7 +28,7 @@ public class SimpleServer extends AbstractServer implements Serializable {
     @Override
     protected void handleMessageFromClient(Object msg, ConnectionToClient client) {
         String msgString = msg.toString();
-        System.out.println(msgString);
+        //System.out.println(msgString);
         if (msgString.startsWith("#warning")) {
             Warning warning = new Warning("Warning from server!");
             try {
@@ -41,7 +41,6 @@ public class SimpleServer extends AbstractServer implements Serializable {
             SubscribedClient connection = new SubscribedClient(client);
             SubscribersList.add(connection);
             try {
-                System.out.println("5555555");
                 System.out.println("5555555");
                 client.sendToClient("client added successfully11");
                 System.out.println("444444444444");
@@ -103,6 +102,7 @@ public class SimpleServer extends AbstractServer implements Serializable {
                         client.sendToClient("You won!");
                         getOpponent(client).sendToClient("You lost!");
                         sendToAllClients("Game over.");
+
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
