@@ -1,5 +1,6 @@
 package il.cshaifasweng.OCSFMediatorExample.client;
 
+import il.cshaifasweng.OCSFMediatorExample.entities.GameMessage;
 import org.greenrobot.eventbus.EventBus;
 
 import il.cshaifasweng.OCSFMediatorExample.client.ocsf.AbstractClient;
@@ -7,9 +8,10 @@ import il.cshaifasweng.OCSFMediatorExample.entities.Warning;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 
-import java.io.Serializable;
+import javax.imageio.IIOException;
+import java.io.IOException;
 
-public class SimpleClient extends AbstractClient implements Serializable {
+public class SimpleClient extends AbstractClient {
 	
 	public static SimpleClient client;
 	public String mySymbol;
@@ -28,18 +30,27 @@ public class SimpleClient extends AbstractClient implements Serializable {
 	}
 
 
-
 	@Override
 	protected void handleMessageFromServer(Object msg) {
+
+		String message = (String) msg;
+//		if(((String) msg).startsWith(mySymbol)) {
+//			EventBus.getDefault().post(new Move());
+//		}
+
 		if (msg.getClass().equals(Warning.class)) {
 			EventBus.getDefault().post(new WarningEvent((Warning) msg));
 		}
 		else{
-			String message = msg.toString();
-			System.out.println(message);
-		}
-		if (msg instanceof String message) {
-			System.out.println("Server: " + message);
+//			String message = msg.toString();
+//			System.out.println(message);
+//		}
+		//if (msg instanceof String message) {
+			//System.out.println("Server: " + message);
+
+			if (message.startsWith("client num")) {
+				/// ////////////////////////////////////////////////new class client info
+			}
 
 			if (message.startsWith("You are player")) {
 				mySymbol = message.endsWith("X") ? "X" : "O";
@@ -59,7 +70,7 @@ public class SimpleClient extends AbstractClient implements Serializable {
 				String symbol = parts[1];
 				int row = Integer.parseInt(parts[4].substring(1, 2));
 				int col = Integer.parseInt(parts[4].substring(3, 4));
-				PrimaryController.getInstance().updateButtonOnBoard(row, col, symbol);
+				PrimaryController.getInstance().updateButtonOnBoard(new Move(row, col, symbol));
 				currentTurn = symbol.equals("X") ? "O" : "X"; // Switch turn
 				PrimaryController.getInstance().setCurrentTurn(currentTurn);
 			}
@@ -74,6 +85,15 @@ public class SimpleClient extends AbstractClient implements Serializable {
 
 			else if (message.equals("Game ended in a draw.")) {
 				showAlert("Draw", "No winner this time.");
+			}
+
+			else if (message.startsWith("Game over")) {
+				try {
+					client.sendToServer("remove all clients");
+				}
+				catch (IOException e){
+					throw new RuntimeException(e);
+				}
 			}
 
 			else if (message.equals("Not your turn.") || message.equals("Cell already taken.")) {

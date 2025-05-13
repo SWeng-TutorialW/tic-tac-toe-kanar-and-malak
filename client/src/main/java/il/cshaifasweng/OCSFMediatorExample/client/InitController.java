@@ -8,6 +8,8 @@ import il.cshaifasweng.OCSFMediatorExample.entities.Warning;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
 import org.greenrobot.eventbus.EventBus;
 
@@ -25,6 +27,9 @@ public class InitController implements Serializable {
     private TextField port; // Value injected by FXMLLoader
 
     @FXML
+    private ProgressIndicator waitingIndicator;
+
+    @FXML
     void ready(ActionEvent event) {
         int portNumber;
         if (host.getText() == null || host.getText().isEmpty() || port.getText() == null || port.getText().isEmpty()) {
@@ -37,7 +42,10 @@ public class InitController implements Serializable {
                 client = SimpleClient.getClient(host.getText(), portNumber);
                 try {
                     client.openConnection();
-                    client.sendToServer("add client");/////////////////////////////////////////////////////
+                    client.sendToServer("add client");
+                    if(client.getmySymbol().equals("X")) {
+                        waitingIndicator.setVisible(true);
+                    }
                     System.out.println("222222222222");
                 } catch (IOException e) {
                     throw new RuntimeException(e);

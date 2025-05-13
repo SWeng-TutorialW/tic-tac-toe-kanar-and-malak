@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import il.cshaifasweng.OCSFMediatorExample.entities.Warning;
 import il.cshaifasweng.OCSFMediatorExample.server.ocsf.SubscribedClient;
 
-public class SimpleServer extends AbstractServer implements Serializable {
+public class SimpleServer extends AbstractServer {
     private static ArrayList<SubscribedClient> SubscribersList = new ArrayList<>();
 
     String[][] GameBoard = new String[3][3];
@@ -44,12 +44,11 @@ public class SimpleServer extends AbstractServer implements Serializable {
                 System.out.println("5555555");
                 client.sendToClient("client added successfully11");
                 System.out.println("444444444444");
-                System.out.println("info2:"+currentTurn);
+                System.out.println("info2:" + currentTurn);
                 System.out.println("33333333333333333333333333");
                 clientsNum++;
-                System.out.println("client num"+clientsNum);
-                if(clientsNum == 2)
-                {
+                client.sendToClient("client num" + clientsNum);
+                if (clientsNum == 2) {
                     sendToAllClients("Game started");
                 }
                 System.out.println(clientsNum);
@@ -62,11 +61,12 @@ public class SimpleServer extends AbstractServer implements Serializable {
                     playerX = client;
                     client.setInfo("symbol", "X");
                     client.sendToClient("You are player X");
+
                 } else if (playerO == null) {
                     playerO = client;
                     client.setInfo("symbol", "O");
                     client.sendToClient("You are player O");
-                    sendToAllClients("Game started! Player X begins.");
+                    //sendToAllClients("Game started! Player X begins.");
                     sendToAllClients("current turn: X");
                     currentTurn = "X";
                 } else {
@@ -82,6 +82,13 @@ public class SimpleServer extends AbstractServer implements Serializable {
                         SubscribersList.remove(subscribedClient);
                         break;
                     }
+                }
+            }
+        } else if (msgString.startsWith("remove all clients")) {
+            if (!SubscribersList.isEmpty()) {
+                for (SubscribedClient subscribedClient : SubscribersList) {
+                    SubscribersList.remove(subscribedClient);
+                    System.exit(0);
                 }
             }
         } else if (msg instanceof GameMessage) {
@@ -109,6 +116,7 @@ public class SimpleServer extends AbstractServer implements Serializable {
                     return;
                 } else if (counter == 9) {
                     sendToAllClients("Game ended, there is a tie!");
+                    sendToAllClients("Game over.");
                     return;
                 }
                 currentTurn = currentTurn.equals("X") ? "O" : "X";

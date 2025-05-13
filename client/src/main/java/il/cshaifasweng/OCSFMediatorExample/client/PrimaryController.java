@@ -20,7 +20,7 @@ import java.io.Serializable;
 import javafx.application.Platform;
 import org.greenrobot.eventbus.Subscribe;
 
-public class PrimaryController implements Serializable {
+public class PrimaryController {
 
     @FXML // fx:id="GameGrid"
     private GridPane GameGrid; // Value injected by FXMLLoader
@@ -65,7 +65,7 @@ public class PrimaryController implements Serializable {
         return instance;
     }
 
-    //fxml?
+    @FXML
     public void initialize() {
         mySymbol = SimpleClient.client.getmySymbol();
         currentTurn = SimpleClient.client.getCurrentTurn();
@@ -122,18 +122,17 @@ public class PrimaryController implements Serializable {
 //        }
 //    }
     @Subscribe
-    public void updateButtonOnBoard(int row, int col, String symbol) {
+    public void updateButtonOnBoard(Move move) {
         Platform.runLater(() -> {
-            Button btn = buttonMatrix[row][col];
-            btn.setText(symbol);
+            Button btn = buttonMatrix[move.getRow()][move.getCol()];
+            btn.setText(move.getSymbol());
             btn.setDisable(true);
-            btn.setStyle(symbol.equals("X") ?
+            btn.setStyle(move.getSymbol().equals("X") ?
                     "-fx-text-fill: blue; -fx-font-size: 24px;" :
                     "-fx-text-fill: red; -fx-font-size: 24px;");
         });
     }
 
-    @Subscribe
     @FXML
     public void click(ActionEvent event) {
         System.out.println("clicked");
@@ -150,11 +149,11 @@ public class PrimaryController implements Serializable {
 
 
 
-        // if it is not your turn
-        if (!myTurn()) {
-            EventBus.getDefault().post(new WarningEvent(new Warning("It's not your turn!")));
-            return;
-        }
+//        // if it is not your turn
+//        if (!myTurn()) {
+//            EventBus.getDefault().post(new WarningEvent(new Warning("It's not your turn!")));
+//            return;
+//        }
 
         Platform.runLater(() -> {
             System.out.println(mySymbol);
@@ -174,12 +173,12 @@ public class PrimaryController implements Serializable {
             GameMessage move = new GameMessage("move", row, col, mySymbol);
             //String msg = String.format("move %d %d %s", row, col, mySymbol);
             client.sendToServer(move);
-            updateTurn();
+            // updateTurn();
 
 
 
         } catch (IOException e) {
-            EventBus.getDefault().post(new WarningEvent(new Warning("Failed to send move.")));
+//            EventBus.getDefault().post(new WarningEvent(new Warning("Failed to send move.")));
         }
     }
 
