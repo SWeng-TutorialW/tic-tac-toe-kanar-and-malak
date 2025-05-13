@@ -42,6 +42,7 @@ public class SimpleServer extends AbstractServer implements Serializable {
             SubscribersList.add(connection);
             try {
                 System.out.println("5555555");
+                System.out.println("5555555");
                 client.sendToClient("client added successfully11");
                 System.out.println("444444444444");
                 System.out.println("info2:"+currentTurn);
