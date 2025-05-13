@@ -14,20 +14,22 @@ import java.io.IOException;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
+import java.io.Serializable;
+import java.util.Scanner;
+
+import static il.cshaifasweng.OCSFMediatorExample.client.SimpleClient.client;
+
+
 /**
  * JavaFX App
  */
-public class App extends Application {
+public class App extends Application implements Serializable {
 
     private static Scene scene;
-    private SimpleClient client;
-
     @Override
     public void start(Stage stage) throws IOException {
     	EventBus.getDefault().register(this);
-    	client = SimpleClient.getClient();
-    	client.openConnection();
-        scene = new Scene(loadFXML("primary"), 640, 480);
+        scene = new Scene(loadFXML("Init"), 640, 480);
         stage.setScene(scene);
         stage.show();
     }
