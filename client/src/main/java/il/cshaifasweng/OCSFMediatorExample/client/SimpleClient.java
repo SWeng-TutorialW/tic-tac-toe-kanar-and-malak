@@ -39,14 +39,20 @@ public class SimpleClient extends AbstractClient {
             System.out.println("Server: " + message);
 
             if (message.startsWith("symbol")) {
-                mySymbol = message.endsWith("X") ? "X" : "O";
+                mySymbol = message.substring("symbol: ".length()).trim();
 
             } else if (message.startsWith("Game started")) {
                 EventBus.getDefault().post("startGame");
+                EventBus.getDefault().post("currentTurn " + currentTurn);
+                try {
+                    client.sendToServer("start");
+                }catch (IOException e){
+                    e.printStackTrace();
+                }
 
-            } else if (message.startsWith("current turn:")) {
-                currentTurn = message.endsWith("X") ? "X" : "O";
-                EventBus.getDefault().post("currentTurn" + currentTurn);
+            } else if (message.startsWith("current turn")) {
+                currentTurn = message.substring("current turn".length()).trim();
+                EventBus.getDefault().post("currentTurn " + currentTurn);
                 EventBus.getDefault().post("accessibility");
 
             } else if (message.startsWith("Player") && message.contains("moved")) {

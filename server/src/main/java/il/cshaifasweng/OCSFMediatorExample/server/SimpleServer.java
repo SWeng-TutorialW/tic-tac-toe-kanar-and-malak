@@ -14,8 +14,8 @@ public class SimpleServer extends AbstractServer {
 
     String[][] GameBoard = new String[3][3];
     int counter = 0;//counts the full cells in the board
-    public ConnectionToClient playerX;
-    public ConnectionToClient playerO;
+    public ConnectionToClient playerX = null;
+    public ConnectionToClient playerO = null;
     public String currentTurn;
     public int clientsNum = 0;
 
@@ -41,6 +41,7 @@ public class SimpleServer extends AbstractServer {
             if (clientsNum == 2) {
                 sendToAllClients("Game started");
             }
+        } else if (msgString.startsWith("start")) {
             try {
                 if (playerX == null) {
                     playerX = client;
@@ -49,11 +50,11 @@ public class SimpleServer extends AbstractServer {
                 } else if (playerO == null) {
                     playerO = client;
                     client.sendToClient("symbol: O");
-                    currentTurn = "X";
-                    sendToAllClients("current turn: " + currentTurn);
                 } else {
                     client.sendToClient("Game is full.");
                 }
+                currentTurn = "X";
+                sendToAllClients("current turn" + currentTurn);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -80,9 +81,9 @@ public class SimpleServer extends AbstractServer {
             String[] indices = parts[1].split(",");
             int row = Integer.parseInt(indices[0]);
             int col = Integer.parseInt(indices[1]);
-            String symbol =  indices[2];
+            String symbol = indices[2];
             update_board(row, col, symbol);
-            sendToAllClients("Player %s moved to [%d,%d]"+ symbol + row + col);
+            sendToAllClients("Player %s moved to [%d,%d]" + symbol + row + col);
             if (WinCheck(GameBoard)) {
                 try {
                     client.sendToClient("Game over, You won!");

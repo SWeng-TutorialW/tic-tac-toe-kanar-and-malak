@@ -1,6 +1,6 @@
 package il.cshaifasweng.OCSFMediatorExample.client;
 
-public class Move {
+public class Move{
     int row;
     int col;
     String symbol;

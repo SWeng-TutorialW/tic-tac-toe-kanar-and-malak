@@ -51,10 +51,12 @@ public class PrimaryController {
     private Button cell22; // Value injected by FXMLLoader
 
     private Button[][] buttonMatrix = new Button[3][3];
+    String currentTurn;
 
     @FXML
     public void initialize() {
         EventBus.getDefault().register(this);
+//        currentTurn = client.getCurrentTurn();
 
         buttonMatrix[0][0] = cell00;
         buttonMatrix[0][1] = cell01;
@@ -66,23 +68,23 @@ public class PrimaryController {
         buttonMatrix[2][1] = cell21;
         buttonMatrix[2][2] = cell22;
 
-        if (!(myTurn())) {
-            Platform.runLater(() -> {
-                cell00.setDisable(true);
-                cell01.setDisable(true);
-                cell02.setDisable(true);
-                cell10.setDisable(true);
-                cell11.setDisable(true);
-                cell12.setDisable(true);
-                cell20.setDisable(true);
-                cell21.setDisable(true);
-                cell22.setDisable(true);
-            });
-        }
+//        if (!(myTurn())) {
+//            Platform.runLater(() -> {
+//                cell00.setDisable(true);
+//                cell01.setDisable(true);
+//                cell02.setDisable(true);
+//                cell10.setDisable(true);
+//                cell11.setDisable(true);
+//                cell12.setDisable(true);
+//                cell20.setDisable(true);
+//                cell21.setDisable(true);
+//                cell22.setDisable(true);
+//            });
+//        }
     }
 
     private boolean myTurn() {
-        return client.mySymbol != null && client.mySymbol.equals(client.currentTurn);
+        return client.getmySymbol() != null && client.getmySymbol().equals(currentTurn);
     }
 
     @Subscribe
@@ -100,6 +102,7 @@ public class PrimaryController {
     @FXML
     public void click(ActionEvent event) {
         if (myTurn()) {
+            System.out.println("its my turn");
             Button clicked = (Button) event.getSource();
             Integer rowIndex = GridPane.getRowIndex(clicked);
             Integer colIndex = GridPane.getColumnIndex(clicked);
@@ -110,13 +113,25 @@ public class PrimaryController {
             try {
                 Move move = new Move(row, col, client.mySymbol);
                 client.sendToServer("move" + row + "," + col + "," + client.mySymbol);
-                updateButtonOnBoard(move);
+                //updateButtonOnBoard(move);
+                currentTurn = currentTurn.equals("X") ? "O" : "X";
+                System.out.println("currentturn2 :" + currentTurn);
             } catch (IOException e) {
                 EventBus.getDefault().post(new WarningEvent(new Warning("Failed to send move.")));
             }
         } else {
+            System.out.println("its NOT my turn");
             EventBus.getDefault().post(new WarningEvent(new Warning("it's not your turn.")));
         }
+    }
+
+    @Subscribe
+    public void updateTurn(String turn) {
+        Platform.runLater(() -> {
+            if (turn.startsWith("currentTurn")) {
+                currentTurn = turn.split(" ")[1];
+            }
+        });
     }
 
     @Subscribe
