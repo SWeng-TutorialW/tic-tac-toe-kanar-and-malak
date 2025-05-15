@@ -136,7 +136,6 @@ public abstract class AbstractClient implements Runnable
       clientSocket= new Socket(host, port);
       output = new ObjectOutputStream(clientSocket.getOutputStream());
       input = new ObjectInputStream(clientSocket.getInputStream());
-      System.out.println("Connecting to " + host + ":" + port);/////////////////////////////////////////
     }
     catch (IOException ex)
     // All three of the above must be closed when there is a failure

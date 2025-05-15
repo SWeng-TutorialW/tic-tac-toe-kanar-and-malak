@@ -1,11 +1,9 @@
 package il.cshaifasweng.OCSFMediatorExample.server;
 
-import il.cshaifasweng.OCSFMediatorExample.entities.GameMessage;
 import il.cshaifasweng.OCSFMediatorExample.server.ocsf.AbstractServer;
 import il.cshaifasweng.OCSFMediatorExample.server.ocsf.ConnectionToClient;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 
 import il.cshaifasweng.OCSFMediatorExample.entities.Warning;
@@ -16,8 +14,8 @@ public class SimpleServer extends AbstractServer {
 
     String[][] GameBoard = new String[3][3];
     int counter = 0;//counts the full cells in the board
-    public ConnectionToClient playerX = null;
-    public ConnectionToClient playerO = null;
+    public ConnectionToClient playerX;
+    public ConnectionToClient playerO;
     public String currentTurn;
     public int clientsNum = 0;
 
@@ -28,47 +26,31 @@ public class SimpleServer extends AbstractServer {
     @Override
     protected void handleMessageFromClient(Object msg, ConnectionToClient client) {
         String msgString = msg.toString();
-        //System.out.println(msgString);
         if (msgString.startsWith("#warning")) {
             Warning warning = new Warning("Warning from server!");
             try {
                 client.sendToClient(warning);
-                System.out.format("Sent warning to client %s\n", client.getInetAddress().getHostAddress());
             } catch (IOException e) {
                 e.printStackTrace();
             }
         } else if (msgString.startsWith("add client")) {
             SubscribedClient connection = new SubscribedClient(client);
             SubscribersList.add(connection);
-            try {
-                System.out.println("5555555");
-                client.sendToClient("client added successfully11");
-                System.out.println("444444444444");
-                System.out.println("info2:" + currentTurn);
-                System.out.println("33333333333333333333333333");
-                clientsNum++;
-                client.sendToClient("client num" + clientsNum);
-                if (clientsNum == 2) {
-                    sendToAllClients("Game started");
-                }
-                System.out.println(clientsNum);
-            } catch (IOException e) {
-                System.out.println("Failed to send initial confirmation to client");
-                e.printStackTrace();
+            System.out.println("client added successfully");
+            clientsNum++;
+            if (clientsNum == 2) {
+                sendToAllClients("Game started");
             }
             try {
                 if (playerX == null) {
                     playerX = client;
-                    client.setInfo("symbol", "X");
-                    client.sendToClient("You are player X");
+                    client.sendToClient("symbol: X");
 
                 } else if (playerO == null) {
                     playerO = client;
-                    client.setInfo("symbol", "O");
-                    client.sendToClient("You are player O");
-                    //sendToAllClients("Game started! Player X begins.");
-                    sendToAllClients("current turn: X");
+                    client.sendToClient("symbol: O");
                     currentTurn = "X";
+                    sendToAllClients("current turn: " + currentTurn);
                 } else {
                     client.sendToClient("Game is full.");
                 }
@@ -76,6 +58,7 @@ public class SimpleServer extends AbstractServer {
                 throw new RuntimeException(e);
             }
         } else if (msgString.startsWith("remove client")) {
+            clientsNum--;
             if (!SubscribersList.isEmpty()) {
                 for (SubscribedClient subscribedClient : SubscribersList) {
                     if (subscribedClient.getClient().equals(client)) {
@@ -85,45 +68,36 @@ public class SimpleServer extends AbstractServer {
                 }
             }
         } else if (msgString.startsWith("remove all clients")) {
+            clientsNum = 0;
             if (!SubscribersList.isEmpty()) {
                 for (SubscribedClient subscribedClient : SubscribersList) {
                     SubscribersList.remove(subscribedClient);
                     System.exit(0);
                 }
             }
-        } else if (msg instanceof GameMessage) {
-            GameMessage gameMessage = (GameMessage) msg;
-            if (gameMessage.getType().equals("move")) {
-                if (!currentTurn.equals(gameMessage.getSymbol())) {
-                    try {
-                        client.sendToClient("Not your turn.");
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    return;
-                }
-                update_board(gameMessage.getRow(), gameMessage.getCol(), gameMessage.getSymbol());
-                sendToAllClients(String.format("Player %s moved to [%d,%d]", gameMessage.getSymbol(), gameMessage.getRow(), gameMessage.getCol()));
-                if (WinCheck(GameBoard)) {
-                    try {
-                        client.sendToClient("You won!");
-                        getOpponent(client).sendToClient("You lost!");
-                        sendToAllClients("Game over.");
+        } else if (msgString.startsWith("move")) {
+            String[] parts = msg.toString().split(" ");
+            String[] indices = parts[1].split(",");
+            int row = Integer.parseInt(indices[0]);
+            int col = Integer.parseInt(indices[1]);
+            String symbol =  indices[2];
+            update_board(row, col, symbol);
+            sendToAllClients("Player %s moved to [%d,%d]"+ symbol + row + col);
+            if (WinCheck(GameBoard)) {
+                try {
+                    client.sendToClient("Game over, You won!");
+                    getOpponent(client).sendToClient("Game over, You lost!");
 
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    return;
-                } else if (counter == 9) {
-                    sendToAllClients("Game ended, there is a tie!");
-                    sendToAllClients("Game over.");
-                    return;
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-                currentTurn = currentTurn.equals("X") ? "O" : "X";
-                sendToAllClients("current turn: " + currentTurn);
+                return;
+            } else if (counter == 9) {
+                sendToAllClients("Game over, Tie!");
+                return;
             }
-
-
+            currentTurn = currentTurn.equals("X") ? "O" : "X";
+            sendToAllClients("current turn: " + currentTurn);
         }
     }
 
