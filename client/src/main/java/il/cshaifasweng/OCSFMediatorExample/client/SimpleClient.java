@@ -1,19 +1,27 @@
 package il.cshaifasweng.OCSFMediatorExample.client;
 
 import org.greenrobot.eventbus.EventBus;
-
 import il.cshaifasweng.OCSFMediatorExample.client.ocsf.AbstractClient;
 import il.cshaifasweng.OCSFMediatorExample.entities.Warning;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 
+import javax.imageio.IIOException;
+import java.io.IOException;
+
 public class SimpleClient extends AbstractClient {
 
-	public static SimpleClient client = null;
-	private String playerSymbol;
+	public static SimpleClient client;
+	String mySymbol;
+	String currentTurn;
+	int clientsNum = 0;
 
-	public String getPlayerSymbol() {
-		return playerSymbol;
+	public String getmySymbol() {
+		return mySymbol;
+	}
+
+	public String getCurrentTurn() {
+		return currentTurn;
 	}
 
 	private SimpleClient(String host, int port) {
@@ -21,56 +29,54 @@ public class SimpleClient extends AbstractClient {
 	}
 
 
-
 	@Override
 	protected void handleMessageFromServer(Object msg) {
+
 		if (msg.getClass().equals(Warning.class)) {
 			EventBus.getDefault().post(new WarningEvent((Warning) msg));
-		}
-		else{
+		} else {
 			String message = msg.toString();
-			System.out.println(message);
-		}
-		if (msg instanceof String message) {
 			System.out.println("Server: " + message);
+			System.out.println("Client received: " + msg);
 
-			if (message.startsWith("You are player")) {
-				String playerSymbol = message.endsWith("X") ? "X" : "O";
-				if (playerSymbol != null) {
-					//.setMySymbol(playerSymbol);////////////////////////
-				}
-			}
+			if (message.startsWith("symbol")) {
+				mySymbol = message.substring("symbol: ".length()).trim();
 
-			else if (message.startsWith("current turn:")) {
-				String turn = message.substring("current turn:".length()).trim();
-				PrimaryController.getInstance().setCurrentTurn(turn);
-				PrimaryController.getInstance().updateBoardAccessibility();
-			}
+			} else if (message.startsWith("Game started")) {
+				EventBus.getDefault().post("startGame");
+				EventBus.getDefault().post("currentTurn " + currentTurn);
+//				try {
+//					client.sendToServer("start");
+//				}catch (IOException e){
+//					e.printStackTrace();
+//				}
 
-			else if (message.startsWith("Player") && message.contains("moved")) {
+			} else if (message.startsWith("current turn")) {
+				currentTurn = message.substring("current turn: ".length()).trim();
+				EventBus.getDefault().post("currentTurn " + currentTurn);
+				EventBus.getDefault().post("accessibility");
+
+			} else if (message.startsWith("Player") && message.contains("moved")) {
 				String[] parts = message.split(" ");
 				String symbol = parts[1];
 				int row = Integer.parseInt(parts[4].substring(1, 2));
 				int col = Integer.parseInt(parts[4].substring(3, 4));
-				PrimaryController.getInstance().updateButtonOnBoard(row, col, symbol);
-				String currentTurn = symbol.equals("X") ? "O" : "X"; // Switch turn
-				PrimaryController.getInstance().setCurrentTurn(currentTurn);
-			}
-
-			else if (message.equals("You won!")) {
-				showAlert("Victory", "You won the game!");
-			}
-
-			else if (message.equals("You lost!")) {
-				showAlert("Defeat", "Better luck next time.");
-			}
-
-			else if (message.equals("Game ended in a draw.")) {
-				showAlert("Draw", "No winner this time.");
-			}
-
-			else if (message.equals("Not your turn.") || message.equals("Cell already taken.")) {
-				EventBus.getDefault().post(new WarningEvent(new Warning(message)));
+				//Move move = new Move(row, col, symbol);
+				EventBus.getDefault().post(new Move(row, col, symbol));
+			} else if (message.startsWith("Game over")) {
+				if (message.contains("You won!")) {
+					showAlert("Victory", "You won the game!");
+				} else if (message.contains("You lost!")) {
+					showAlert("Defeat", "Better luck next time.");
+				} else if (message.contains("Tie!")) {
+					showAlert("Draw", "No winner this time.");
+				}
+				try {
+					client.sendToServer("remove all clients");
+					clientsNum--;
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
 			}
 		}
 	}
@@ -81,6 +87,7 @@ public class SimpleClient extends AbstractClient {
 		}
 		return client;
 	}
+
 	private void showAlert(String title, String message) {
 		Platform.runLater(() -> {
 			Alert alert = new Alert(Alert.AlertType.INFORMATION);

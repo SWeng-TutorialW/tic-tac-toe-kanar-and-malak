@@ -1,6 +1,5 @@
 package il.cshaifasweng.OCSFMediatorExample.server;
 
-import il.cshaifasweng.OCSFMediatorExample.entities.GameMessage;
 import il.cshaifasweng.OCSFMediatorExample.server.ocsf.AbstractServer;
 import il.cshaifasweng.OCSFMediatorExample.server.ocsf.ConnectionToClient;
 
@@ -15,10 +14,10 @@ public class SimpleServer extends AbstractServer {
 
 	String[][] GameBoard = new String[3][3];
 	int counter = 0;//counts the full cells in the board
-	private ConnectionToClient playerX = null;
-	private ConnectionToClient playerO = null;
-	private String currentTurn = "X";
-	private int clientsNum = 0;
+	public ConnectionToClient playerX = null;
+	public ConnectionToClient playerO = null;
+	public String currentTurn;
+	public int clientsNum = 0;
 
 	public SimpleServer(int port) {
 		super(port);
@@ -27,44 +26,39 @@ public class SimpleServer extends AbstractServer {
 	@Override
 	protected void handleMessageFromClient(Object msg, ConnectionToClient client) {
 		String msgString = msg.toString();
-		System.out.println(msgString);
 		if (msgString.startsWith("#warning")) {
 			Warning warning = new Warning("Warning from server!");
 			try {
 				client.sendToClient(warning);
-				System.out.format("Sent warning to client %s\n", client.getInetAddress().getHostAddress());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		} else if (msgString.startsWith("add client")) {
 			SubscribedClient connection = new SubscribedClient(client);
 			SubscribersList.add(connection);
-			try {
-				client.sendToClient("client added successfully");
-//                currentTurn = client.;
-				clientsNum++;
-				System.out.println(clientsNum);
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-			try {
-				if (playerX == null) {
-					playerX = client;
-					client.setInfo("symbol", "X");
-					client.sendToClient("You are player X");
-				} else if (playerO == null) {
-					playerO = client;
-					client.setInfo("symbol", "O");
-					client.sendToClient("You are player O");
-					sendToAllClients("Game started! Player X begins.");
-					sendToAllClients("current turn: X");
-				} else {
-					client.sendToClient("Game is full.");
+			System.out.println("client added successfully");
+			clientsNum++;
+			if (clientsNum == 2) {
+				sendToAllClients("Game started");
+			}	try {
+					if (playerX == null) {
+						playerX = client;
+						client.sendToClient("symbol: X");
+
+					} else if (playerO == null) {
+						playerO = client;
+						client.sendToClient("symbol: O");
+					} else {
+						client.sendToClient("Game is full.");
+					}
+					currentTurn = "X";
+					sendToAllClients("current turn: " + currentTurn);
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
+			//}
 		} else if (msgString.startsWith("remove client")) {
+			clientsNum--;
 			if (!SubscribersList.isEmpty()) {
 				for (SubscribedClient subscribedClient : SubscribersList) {
 					if (subscribedClient.getClient().equals(client)) {
@@ -73,37 +67,37 @@ public class SimpleServer extends AbstractServer {
 					}
 				}
 			}
-		} else if (msg instanceof GameMessage) {
-			GameMessage gameMessage = (GameMessage) msg;
-			if (gameMessage.getType().equals("move")) {
-				if (!currentTurn.equals(gameMessage.getSymbol())) {
-					try {
-						client.sendToClient("Not your turn.");
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-					return;
+		} else if (msgString.startsWith("remove all clients")) {
+			clientsNum = 0;
+			if (!SubscribersList.isEmpty()) {
+				for (SubscribedClient subscribedClient : SubscribersList) {
+					SubscribersList.remove(subscribedClient);
+					System.exit(0);
 				}
-				update_board(gameMessage.getRow(), gameMessage.getCol(), gameMessage.getSymbol());
-				sendToAllClients(String.format("Player %s moved to [%d,%d]", gameMessage.getSymbol(), gameMessage.getRow(), gameMessage.getCol()));
-				if (WinCheck(GameBoard)) {
-					try {
-						client.sendToClient("You won!");
-						getOpponent(client).sendToClient("You lost!");
-						sendToAllClients("Game over.");
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-					return;
-				} else if (counter == 9) {
-					sendToAllClients("Game ended, there is a tie!");
-					return;
-				}
-				currentTurn = currentTurn.equals("X") ? "O" : "X";
-				sendToAllClients("current turn: " + currentTurn);
 			}
+		} else if (msgString.startsWith("move")) {
+			String[] parts = msg.toString().split(" ");
+			String[] indices = parts[1].split(",");
+			int row = Integer.parseInt(indices[0]);
+			int col = Integer.parseInt(indices[1]);
+			String symbol = indices[2];
+			update_board(row, col, symbol);
+			sendToAllClients("Player %s moved to [%d,%d]" + symbol + row + col);
+			if (WinCheck(GameBoard)) {
+				try {
+					client.sendToClient("Game over, You won!");
+					getOpponent(client).sendToClient("Game over, You lost!");
 
-
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				return;
+			} else if (counter == 9) {
+				sendToAllClients("Game over, Tie!");
+				return;
+			}
+			currentTurn = currentTurn.equals("X") ? "O" : "X";
+			sendToAllClients("current turn: " + currentTurn);
 		}
 	}
 
