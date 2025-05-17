@@ -32,12 +32,13 @@ public class InitController {
 
     @FXML
     void initialize() {
-        waitingIndicator.setVisible(true);
+        waitingIndicator.setVisible(false);
         EventBus.getDefault().register(this);
     }
 
     @FXML
     void ready(ActionEvent event) {
+        waitingIndicator.setVisible(true);
         int portNumber;
         if (host.getText() == null || host.getText().isEmpty() || port.getText() == null || port.getText().isEmpty()) {
             Warning warning = new Warning("must fill all fields!");
@@ -50,7 +51,8 @@ public class InitController {
                     client.openConnection();
                     client.sendToServer("add client");
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    e.printStackTrace();
+                    System.out.println("Failed to open connection or send to server.");
                 }
             } catch (NumberFormatException e) {
                 Warning warning = new Warning("Invalid port");
@@ -65,7 +67,6 @@ public class InitController {
         if (event.equals("startGame")) {
             System.out.println("start the game!");
             Platform.runLater(() -> {
-                waitingIndicator.setVisible(false);
                 try {
                     setRoot("primary");
                 } catch (IOException e) {

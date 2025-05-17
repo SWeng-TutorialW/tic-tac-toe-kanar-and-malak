@@ -1,5 +1,6 @@
 package il.cshaifasweng.OCSFMediatorExample.client;
 
+import il.cshaifasweng.OCSFMediatorExample.entities.MoveEvent;
 import org.greenrobot.eventbus.EventBus;
 import il.cshaifasweng.OCSFMediatorExample.client.ocsf.AbstractClient;
 import il.cshaifasweng.OCSFMediatorExample.entities.Warning;
@@ -41,27 +42,32 @@ public class SimpleClient extends AbstractClient {
             if (message.startsWith("symbol")) {
                 mySymbol = message.substring("symbol: ".length()).trim();
 
-            } else if (message.startsWith("Game started")) {
+//            } else if (message.startsWith("Game started")) {
+//                EventBus.getDefault().post("startGame");
+
+            } else if (message.startsWith("Ready")) {
+                currentTurn = "X";
+                //EventBus.getDefault().post(new TurnEvent("X"));
                 EventBus.getDefault().post("startGame");
-                EventBus.getDefault().post("currentTurn " + currentTurn);
-                try {
-                    client.sendToServer("start");
-                }catch (IOException e){
-                    e.printStackTrace();
-                }
 
             } else if (message.startsWith("current turn")) {
+                System.out.println("Received message: >" + message + "<");
+                System.out.println("mySymbol: >" + mySymbol + "<, currentTurn: >" + currentTurn + "<");
                 currentTurn = message.substring("current turn".length()).trim();
-                EventBus.getDefault().post("currentTurn " + currentTurn);
-                EventBus.getDefault().post("accessibility");
+                //EventBus.getDefault().post(new TurnEvent(currentTurn));
+                // EventBus.getDefault().post("currentTurn " + currentTurn);
+               // EventBus.getDefault().post("accessibility");
 
-            } else if (message.startsWith("Player") && message.contains("moved")) {
-                String[] parts = message.split(" ");
-                String symbol = parts[1];
-                int row = Integer.parseInt(parts[4].substring(1, 2));
-                int col = Integer.parseInt(parts[4].substring(3, 4));
-                Move move = new Move(row, col, symbol);
-                EventBus.getDefault().post(move);
+            } //else if (message.startsWith("Player") && message.contains("moved")) {
+            else if (msg instanceof MoveEvent) {
+            System.out.println("Received message: >" + message + "<");
+//                String[] parts = message.split(" ");
+//                String symbol = parts[1];
+//                int row = Integer.parseInt(parts[4].substring(1, 2));
+//                int col = Integer.parseInt(parts[4].substring(3, 4));
+//                Move move = new Move(row, col, symbol);
+                  EventBus.getDefault().post(msg);
+
             } else if (message.startsWith("Game over")) {
                 if (message.contains("You won!")) {
                     showAlert("Victory", "You won the game!");
