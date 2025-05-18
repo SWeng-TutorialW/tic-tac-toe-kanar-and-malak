@@ -42,7 +42,6 @@ public class SimpleClient extends AbstractClient {
 
             } else if (message.startsWith("Ready")) {
                 currentTurn = "X";
-                //EventBus.getDefault().post(new TurnEvent("X"));
                 EventBus.getDefault().post("startGame");
 
             } else if (message.startsWith("current turn")) {
