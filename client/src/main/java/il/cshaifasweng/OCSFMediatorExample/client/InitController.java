@@ -12,10 +12,7 @@ import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
-
 import java.io.IOException;
-import java.io.Serializable;
-
 import static il.cshaifasweng.OCSFMediatorExample.client.App.setRoot;
 import static il.cshaifasweng.OCSFMediatorExample.client.SimpleClient.client;
 

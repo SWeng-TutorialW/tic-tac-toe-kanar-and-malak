@@ -7,7 +7,6 @@ import il.cshaifasweng.OCSFMediatorExample.entities.Warning;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 
-import javax.imageio.IIOException;
 import java.io.IOException;
 
 public class SimpleClient extends AbstractClient {
@@ -42,9 +41,6 @@ public class SimpleClient extends AbstractClient {
             if (message.startsWith("symbol")) {
                 mySymbol = message.substring("symbol: ".length()).trim();
 
-//            } else if (message.startsWith("Game started")) {
-//                EventBus.getDefault().post("startGame");
-
             } else if (message.startsWith("Ready")) {
                 currentTurn = "X";
                 //EventBus.getDefault().post(new TurnEvent("X"));
@@ -54,19 +50,10 @@ public class SimpleClient extends AbstractClient {
                 System.out.println("Received message: >" + message + "<");
                 System.out.println("mySymbol: >" + mySymbol + "<, currentTurn: >" + currentTurn + "<");
                 currentTurn = message.substring("current turn".length()).trim();
-                //EventBus.getDefault().post(new TurnEvent(currentTurn));
-                // EventBus.getDefault().post("currentTurn " + currentTurn);
-               // EventBus.getDefault().post("accessibility");
 
-            } //else if (message.startsWith("Player") && message.contains("moved")) {
-            else if (msg instanceof MoveEvent) {
-            System.out.println("Received message: >" + message + "<");
-//                String[] parts = message.split(" ");
-//                String symbol = parts[1];
-//                int row = Integer.parseInt(parts[4].substring(1, 2));
-//                int col = Integer.parseInt(parts[4].substring(3, 4));
-//                Move move = new Move(row, col, symbol);
-                  EventBus.getDefault().post(msg);
+            } else if (msg instanceof MoveEvent) {
+                System.out.println("Received message: >" + message + "<");
+                EventBus.getDefault().post(msg);
 
             } else if (message.startsWith("Game over")) {
                 if (message.contains("You won!")) {

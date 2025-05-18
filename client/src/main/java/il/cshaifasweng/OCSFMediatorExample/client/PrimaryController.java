@@ -1,5 +1,6 @@
 /**
  * Sample Skeleton for 'primary.fxml' Controller Class
+ * final
  */
 
 package il.cshaifasweng.OCSFMediatorExample.client;
@@ -11,12 +12,9 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
 import org.greenrobot.eventbus.EventBus;
-
 import static il.cshaifasweng.OCSFMediatorExample.client.SimpleClient.client;
 import static il.cshaifasweng.OCSFMediatorExample.client.SimpleClient.getClient;
-
 import java.io.IOException;
-
 import javafx.application.Platform;
 import org.greenrobot.eventbus.Subscribe;
 
@@ -59,7 +57,6 @@ public class PrimaryController {
         System.out.println("PrimaryController initialized");
         getClient("", 3000).sendToServer("Primary Initialized");
         EventBus.getDefault().register(this);
-        //currentTurn = SimpleClient.client.getCurrentTurn();
 
         buttonMatrix[0][0] = cell00;
         buttonMatrix[0][1] = cell01;
@@ -70,42 +67,8 @@ public class PrimaryController {
         buttonMatrix[2][0] = cell20;
         buttonMatrix[2][1] = cell21;
         buttonMatrix[2][2] = cell22;
-
-//        if (!(myTurn())) {
-//            Platform.runLater(() -> {
-//                cell00.setDisable(true);
-//                cell01.setDisable(true);
-//                cell02.setDisable(true);
-//                cell10.setDisable(true);
-//                cell11.setDisable(true);
-//                cell12.setDisable(true);
-//                cell20.setDisable(true);
-//                cell21.setDisable(true);
-//                cell22.setDisable(true);
-//            });
-//        }
     }
 
-//    private boolean myTurn() {
-//        String symbol = client.getmySymbol();
-//        System.out.println("symbol from my turn: " + symbol);
-//        System.out.println("current turn from myturn " + client.currentTurn);
-////        if (symbol == null || currentTurn == null) {
-////            return false;
-////        }
-////        System.out.println("mySymbol chars:");
-////        for (char c : symbol.toCharArray()) {
-////            System.out.println((int)c);
-////        }
-////        System.out.println("currentTurn chars:");
-////        for (char c : currentTurn.toCharArray()) {
-////            System.out.println((int)c);
-////        }
-//
-
-    /// /        return symbol.trim().equals(currentTurn.trim());
-//        return symbol != null && symbol.equals(client.currentTurn);
-//    }
     @Subscribe
     public void updateButtonOnBoard(MoveEvent move) {
         System.out.println("updateButtonOnBoard: " + move.getSymbol());
@@ -121,9 +84,6 @@ public class PrimaryController {
 
     @FXML
     public void click(ActionEvent event) {
-        //System.out.println(myTurn());
-        System.out.println("client.my symbol:" + client.mySymbol);
-        System.out.println("client.currentturn:" + client.currentTurn);
         if (client.mySymbol != null && client.mySymbol.equals(client.currentTurn)) {
             System.out.println("its my turn");
             Button clicked = (Button) event.getSource();
@@ -136,10 +96,8 @@ public class PrimaryController {
             try {
                 MoveEvent move = new MoveEvent(row, col, client.mySymbol);
                 client.sendToServer("move " + row + "," + col + "," + client.mySymbol);
-                //updateButtonOnBoard(move);
                 EventBus.getDefault().post(move);
                 client.currentTurn = client.currentTurn.equals("X") ? "O" : "X";
-                System.out.println("currentturn2 :" + client.currentTurn);
             } catch (IOException e) {
                 EventBus.getDefault().post(new WarningEvent(new Warning("Failed to send move.")));
             }
@@ -149,16 +107,6 @@ public class PrimaryController {
         }
     }
 
-    //    @Subscribe
-//    public void updateTurn(String turn) {
-//        System.out.println("updateTurn got event: >" + turn + "<");
-//        Platform.runLater(() -> {
-//            if (turn.startsWith("currentTurn")) {
-//                currentTurn = turn.split(" ")[1];
-//                System.out.println("updated currentTurn to: " + currentTurn);
-//            }
-//        });
-//    }
     @Subscribe
     public void updateTurn(TurnEvent event) {
         System.out.println("Got TurnEvent: " + event.turn);
@@ -166,8 +114,8 @@ public class PrimaryController {
     }
 }
 
-//    @Subscribe
-//    public void updateBoardAccessibility(String event) {
+//    @SubscriberdAccessibility
+//    public void updateBoa(String event) {
 //        if (event.equals("accessibility")) {
 //            Platform.runLater(() -> {
 //                boolean enable = (client.mySymbol != null && client.mySymbol.equals(client.currentTurn));
