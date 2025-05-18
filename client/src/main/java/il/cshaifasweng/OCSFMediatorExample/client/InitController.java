@@ -2,6 +2,7 @@
  * Sample Skeleton for 'init.fxml' Controller Class
  */
 
+
 package il.cshaifasweng.OCSFMediatorExample.client;
 
 import il.cshaifasweng.OCSFMediatorExample.entities.Warning;

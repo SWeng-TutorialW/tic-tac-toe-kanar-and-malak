@@ -5,6 +5,7 @@
 
 package il.cshaifasweng.OCSFMediatorExample.client;
 
+
 import il.cshaifasweng.OCSFMediatorExample.entities.MoveEvent;
 import il.cshaifasweng.OCSFMediatorExample.entities.Warning;
 import javafx.event.ActionEvent;

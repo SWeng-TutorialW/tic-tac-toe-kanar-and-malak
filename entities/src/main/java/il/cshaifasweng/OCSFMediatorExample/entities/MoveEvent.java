@@ -20,5 +20,4 @@ public class MoveEvent implements Serializable {
     public String getSymbol() {
         return symbol;
     }
-
 }

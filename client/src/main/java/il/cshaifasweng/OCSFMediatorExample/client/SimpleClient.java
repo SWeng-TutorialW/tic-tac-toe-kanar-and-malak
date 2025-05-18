@@ -6,7 +6,6 @@ import il.cshaifasweng.OCSFMediatorExample.client.ocsf.AbstractClient;
 import il.cshaifasweng.OCSFMediatorExample.entities.Warning;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
-
 import java.io.IOException;
 
 public class SimpleClient extends AbstractClient {
